@@ -40,7 +40,6 @@ public abstract class Entity {
 	 */
 	public Entity(String ref,int x,int y) {
 		this.sprite = SpriteStore.get().getSprite(ref);
-		
 		this.x = x;
 		this.y = y;
 	}
@@ -51,11 +50,11 @@ public abstract class Entity {
 	 * 
 	 * @param delta The ammount of time that has passed in milliseconds
 	 */
-	public void move(long delta) {
+	public void move(long delta,boolean dir) {
 		// update the location of the entity based on move speeds
 		x += (delta * dx) / 1000;
 		y += (delta * dy) / 1000;
-	}
+	}	
 	
 	/**
 	 * Set the horizontal speed of this entity

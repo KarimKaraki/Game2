@@ -40,7 +40,7 @@ public class ShipEntity extends Entity {
 			return;
 		}
 		
-		super.move(delta);
+		super.move(delta,false);
 	}
 	
 	/**
@@ -51,6 +51,8 @@ public class ShipEntity extends Entity {
 	public void collidedWith(Entity other) {
 		// if its an alien, notify the game that the player
 		// is dead
-		
+		if (other instanceof AlienEntity) {
+			game.notifyDeath();
+		}
 	}
 }

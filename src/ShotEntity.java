@@ -35,7 +35,7 @@ public class ShotEntity extends Entity {
 	 */
 	public void move(long delta) {
 		// proceed with normal move
-		super.move(delta);
+		super.move(delta,false);
 		
 		// if we shot off the screen, remove ourselfs
 		if (y < -100) {
@@ -57,6 +57,14 @@ public class ShotEntity extends Entity {
 		}
 		
 		// if we've hit an alien, kill it!
-		
+		if (other instanceof AlienEntity) {
+			// remove the affected entities
+			game.removeEntity(this);
+			game.removeEntity(other);
+			
+			// notify the game that the alien has been killed
+			game.notifyAlienKilled();
+			used = true;
+		}
 	}
 }

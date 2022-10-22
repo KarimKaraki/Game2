@@ -5,12 +5,13 @@ import java.awt.Dimension;
 import java.awt.Graphics2D;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.image.BufferStrategy;
 import java.util.ArrayList;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.CountDownLatch;
+import java.util.Random;
+import java.util.Timer;
 
 import javax.swing.JFrame;
 import javax.swing.JPanel;
@@ -40,7 +41,7 @@ public class Game extends Canvas {
 	/** The list of entities that need to be removed from the game this loop */
 	private ArrayList removeList = new ArrayList();
 	/** The entity representing the player */
-	private Entity ship;
+	private Entity ship ;
 	/** The speed at which the player's ship should move (pixels/sec) */
 	private double moveSpeed = 300;
 	/** The time at which last fired a shot */
@@ -49,6 +50,8 @@ public class Game extends Canvas {
 	private long firingInterval = 500;
 	/** The number of aliens left on the screen */
 	private int alienCount;
+	
+	private double speed = 1.02;
 	
 	/** The message to display which waiting for a key press */
 	private String message = "";
@@ -78,7 +81,8 @@ public class Game extends Canvas {
 		// setup our canvas size and put it into the content of the frame
 		setBounds(0,0,800,600);
 		panel.add(this);
-		
+		Timer tim  = new Timer();
+
 		// Tell AWT not to bother repainting our canvas since we're
 		// going to do that our self in accelerated mode
 		setIgnoreRepaint(true);
@@ -134,18 +138,28 @@ public class Game extends Canvas {
 	 */
 	private void initEntities() {
 		// create the player ship and place it roughly in the center of the screen
-		ship = new ShipEntity(this,"ship.gif",370,550);
+		ship = new ShipEntity(this,"gun.gif",400,550);
 		entities.add(ship);
 		
+		Random rd = new Random(); // creating Random object
+		boolean dir = rd.nextBoolean();
+		int angle = rd.nextInt(3);
 		// create a block of aliens (5 rows, by 12 aliens, spaced evenly)
 		alienCount = 0;
-		/*for (int row=0;row<5;row++) {
-			for (int x=0;x<12;x++) {
-				Entity alien = new AlienEntity(this,"alien.gif",100+(x*50),(50)+row*30);
-				entities.add(alien);
-				alienCount++;
-			}
-		}*/
+		Entity alien = new AlienEntity(this,"plot.gif",400,400,dir,angle);
+		entities.add(alien);
+			
+		
+	}
+	
+	private void initAliens() {
+		alienCount = 0;
+		Random rd = new Random(); // creating Random object
+		boolean dir = rd.nextBoolean();
+		int angle = rd.nextInt(3);
+		Entity alien = new AlienEntity(this,"plot.gif",400,400,dir,angle);
+		entities.add(alien);
+		
 	}
 	
 	/**
@@ -189,14 +203,17 @@ public class Game extends Canvas {
 	 */
 	public void notifyAlienKilled() {
 		// reduce the alient count, if there are none left, the player has won!
-		alienCount--;
 		
-		if (alienCount == 0) {
-			notifyWin();
+		// if there are still some aliens left then they all need to get faster, so
+		// speed up all the existing aliens
+		for (int i=0;i<entities.size();i++) {
+			Entity entity = (Entity) entities.get(i);
+			
+			if (entity instanceof AlienEntity) {
+				// speed up by 2%
+				entity.setHorizontalMovement(entity.getHorizontalMovement() * speed);
+			}
 		}
-		
-		
-		
 	}
 	
 	/**
@@ -204,19 +221,16 @@ public class Game extends Canvas {
 	 * since we must first check that the player can fire at this 
 	 * point, i.e. has he/she waited long enough between shots
 	 */
-	public void tryToFire(int x) {
+	public void tryToFire() {
 		// check that we have waiting long enough to fire
 		if (System.currentTimeMillis() - lastFire < firingInterval) {
 			return;
 		}
 		
-		int count = 0;
-		int cur_x = ship.getX();
 		// if we waited long enough, create the shot entity, and record the time.
 		lastFire = System.currentTimeMillis();
 		ShotEntity shot = new ShotEntity(this,"shot.gif",ship.getX()+10,ship.getY()-30);
 		entities.add(shot);
-		
 	}
 	
 	/**
@@ -247,12 +261,22 @@ public class Game extends Canvas {
 			g.setColor(Color.black);
 			g.fillRect(0,0,800,600);
 			
+			Random rd = new Random(); // creating Random object
+			boolean dir = rd.nextBoolean();
+			
 			// cycle round asking each entity to move itself
 			if (!waitingForKeyPress) {
 				for (int i=0;i<entities.size();i++) {
 					Entity entity = (Entity) entities.get(i);
+					if(entity instanceof AlienEntity) {
+						if(entity.getX() == 10 || entity.getY() == 0 || entity.getX() == 800) {
+							removeEntity(entity);
+							initAliens();
+						}
+					}
+					entity.move(delta,dir);
 					
-					entity.move(delta);
+					
 				}
 			}
 			
@@ -274,6 +298,7 @@ public class Game extends Canvas {
 					if (me.collidesWith(him)) {
 						me.collidedWith(him);
 						him.collidedWith(me);
+						initAliens();
 					}
 				}
 			}
@@ -320,8 +345,7 @@ public class Game extends Canvas {
 			
 			// if we're pressing fire, attempt to fire
 			if (firePressed) {
-				int x = ship.getX();
-				tryToFire(x);
+				tryToFire();
 			}
 			
 			// finally pause for a bit. Note: this should run us at about
@@ -441,6 +465,8 @@ public class Game extends Canvas {
 		// Start the main game loop, note: this method will not
 		// return until the game has finished running. Hence we are
 		// using the actual main thread to run the game.
-		g.gameLoop();
+		while(true) {
+			g.gameLoop();
+		}
 	}
 }

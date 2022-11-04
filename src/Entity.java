@@ -13,7 +13,6 @@ import java.awt.Rectangle;
  * they will be display half way through a pixel but allows us not lose
  * accuracy as we move.
  * 
- * @author Kevin Glass
  */
 public abstract class Entity {
 	/** The current x location of this entity */ 

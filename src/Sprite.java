@@ -9,7 +9,6 @@ import java.awt.Image;
  * lots of different places without having to store multiple 
  * copies of the image.
  * 
- * @author Kevin Glass
  */
 public class Sprite {
 	/** The image to be drawn for this sprite */

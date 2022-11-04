@@ -9,12 +9,15 @@ import java.awt.event.KeyListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.image.BufferStrategy;
+import java.lang.System.Logger.Level;
+import java.nio.channels.IllegalBlockingModeException;
 import java.util.ArrayList;
 import java.util.Random;
 import java.util.Timer;
 
 import javax.swing.JFrame;
 import javax.swing.JPanel;
+import javax.swing.JLabel;
 
 /**
  * The main hook of our game. This class with both act as a manager
@@ -33,38 +36,41 @@ import javax.swing.JPanel;
  */
 public class Game extends Canvas {
 	/** The stragey that allows us to use accelerate page flipping */
-	private BufferStrategy strategy;
+	public BufferStrategy strategy;
 	/** True if the game is currently "running", i.e. the game loop is looping */
-	private boolean gameRunning = true;
+	public boolean gameRunning = true;
 	/** The list of all the entities that exist in our game */
-	private ArrayList entities = new ArrayList();
+	public ArrayList entities = new ArrayList();
 	/** The list of entities that need to be removed from the game this loop */
-	private ArrayList removeList = new ArrayList();
+	public ArrayList removeList = new ArrayList();
 	/** The entity representing the player */
-	private Entity ship ;
+	public Entity ship ;
 	/** The speed at which the player's ship should move (pixels/sec) */
-	private double moveSpeed = 300;
+	public double moveSpeed = 300;
 	/** The time at which last fired a shot */
-	private long lastFire = 0;
+	public long lastFire = 0;
 	/** The interval between our players shot (ms) */
-	private long firingInterval = 500;
+	public long firingInterval = 300;
 	/** The number of aliens left on the screen */
-	private int alienCount;
+	public int alienCount;
 	
-	private double speed = 1.02;
+	public double speed = 1.02;
 	
 	/** The message to display which waiting for a key press */
-	private String message = "";
+	public String message = "";
 	/** True if we're holding up game play until a key has been pressed */
-	private boolean waitingForKeyPress = true;
+	public boolean waitingForKeyPress = true;
 	/** True if the left cursor key is currently pressed */
-	private boolean leftPressed = false;
+	public boolean leftPressed = false;
 	/** True if the right cursor key is currently pressed */
-	private boolean rightPressed = false;
+	public boolean rightPressed = false;
 	/** True if we are firing */
-	private boolean firePressed = false;
+	public boolean firePressed = false;
 	/** True if game logic needs to be applied this loop, normally as a result of a game event */
-	private boolean logicRequiredThisLoop = false;
+	public boolean logicRequiredThisLoop = false;
+	public JLabel scoreLabel ;
+	public int score = 0;
+	public static int level = 0;
 	
 	/**
 	 * Construct our game and set it running.
@@ -79,6 +85,10 @@ public class Game extends Canvas {
 		panel.setLayout(null);
 		
 		// setup our canvas size and put it into the content of the frame
+		scoreLabel= new JLabel("Score=0");
+		scoreLabel.setBackground(Color.black);
+		scoreLabel.setBounds(10, 10, 60, 20);
+		panel.add(scoreLabel);
 		setBounds(0,0,800,600);
 		panel.add(this);
 		Timer tim  = new Timer();
@@ -86,6 +96,9 @@ public class Game extends Canvas {
 		// Tell AWT not to bother repainting our canvas since we're
 		// going to do that our self in accelerated mode
 		setIgnoreRepaint(true);
+		
+		
+		
 		
 		// finally make the window visible 
 		container.pack();
@@ -96,6 +109,7 @@ public class Game extends Canvas {
 		// do we'd like to exit the game
 		container.addWindowListener(new WindowAdapter() {
 			public void windowClosing(WindowEvent e) {
+				
 				System.exit(0);
 			}
 		});
@@ -121,7 +135,7 @@ public class Game extends Canvas {
 	 * Start a fresh game, this should clear out any old data and
 	 * create a new set.
 	 */
-	private void startGame() {
+	public void startGame() {
 		// clear out any existing entities and intialise a new set
 		entities.clear();
 		initEntities();
@@ -136,14 +150,18 @@ public class Game extends Canvas {
 	 * Initialise the starting state of the entities (ship and aliens). Each
 	 * entitiy will be added to the overall list of entities in the game.
 	 */
-	private void initEntities() {
+	public void initEntities() {
 		// create the player ship and place it roughly in the center of the screen
 		ship = new ShipEntity(this,"gun.gif",400,550);
 		entities.add(ship);
 		
 		Random rd = new Random(); // creating Random object
 		boolean dir = rd.nextBoolean();
-		int angle = rd.nextInt(3);
+		//int angle = rd.nextInt(3);
+		int angle = 1;
+//		if(level == 1) {
+//			angle = rd.nextInt(3);
+//		} else if(level == 2)
 		// create a block of aliens (5 rows, by 12 aliens, spaced evenly)
 		alienCount = 0;
 		Entity alien = new AlienEntity(this,"plot.gif",400,400,dir,angle);
@@ -152,11 +170,13 @@ public class Game extends Canvas {
 		
 	}
 	
-	private void initAliens() {
+	public void initAliens() {
 		alienCount = 0;
 		Random rd = new Random(); // creating Random object
 		boolean dir = rd.nextBoolean();
-		int angle = rd.nextInt(3);
+		
+		//int angle = rd.nextInt(3);
+		int angle  = 1;
 		Entity alien = new AlienEntity(this,"plot.gif",400,400,dir,angle);
 		entities.add(alien);
 		
@@ -193,10 +213,10 @@ public class Game extends Canvas {
 	 * Notification that the player has won since all the aliens
 	 * are dead.
 	 */
-	public void notifyWin() {
-		message = "Well done! You Win!";
-		waitingForKeyPress = true;
-	}
+	//public void notifyWin() {
+		//message = "Well done! You Win!";
+	//	waitingForKeyPress = true;
+	//}
 	
 	/**
 	 * Notification that an alien has been killed
@@ -246,7 +266,6 @@ public class Game extends Canvas {
 	 */
 	public void gameLoop() {
 		long lastLoopTime = System.currentTimeMillis();
-		
 		// keep looping round til the game ends
 		while (gameRunning) {
 			// work out how long its been since the last update, this
@@ -258,7 +277,7 @@ public class Game extends Canvas {
 			// Get hold of a graphics context for the accelerated 
 			// surface and blank it out
 			Graphics2D g = (Graphics2D) strategy.getDrawGraphics();
-			g.setColor(Color.black);
+			g.setColor(Color.blue);
 			g.fillRect(0,0,800,600);
 			
 			Random rd = new Random(); // creating Random object
@@ -269,7 +288,7 @@ public class Game extends Canvas {
 				for (int i=0;i<entities.size();i++) {
 					Entity entity = (Entity) entities.get(i);
 					if(entity instanceof AlienEntity) {
-						if(entity.getX() == 10 || entity.getY() == 0 || entity.getX() == 800) {
+						if(entity.getX() <= 10 || entity.getY() <= 0 || entity.getX() >= 800) {
 							removeEntity(entity);
 							initAliens();
 						}
@@ -299,6 +318,9 @@ public class Game extends Canvas {
 						me.collidedWith(him);
 						him.collidedWith(me);
 						initAliens();
+						score++;
+						scoreLabel.setText("Score="+Integer.toString(score));
+						
 					}
 				}
 			}
@@ -324,7 +346,7 @@ public class Game extends Canvas {
 			if (waitingForKeyPress) {
 				g.setColor(Color.white);
 				g.drawString(message,(800-g.getFontMetrics().stringWidth(message))/2,250);
-				g.drawString("Press any key",(800-g.getFontMetrics().stringWidth("Press any key"))/2,300);
+				g.drawString("Press any key to start, and click X to go back to main menu",(800-g.getFontMetrics().stringWidth("Press any key to start, and click X		 to go back to main menu"))/2,300);
 			}
 			
 			// finally, we've completed drawing so clear up the graphics
@@ -348,9 +370,9 @@ public class Game extends Canvas {
 				tryToFire();
 			}
 			
-			// finally pause for a bit. Note: this should run us at about
-			// 100 fps but on windows this might vary each loop due to
-			// a bad implementation of timer
+			//finally pause for a bit. Note: this should run us at about
+			//100 fps but on windows this might vary each loop due to
+			//a bad implementation of timer
 			try { Thread.sleep(10); } catch (Exception e) {}
 		}
 	}
@@ -367,9 +389,9 @@ public class Game extends Canvas {
 	 * 
 	 * @author Kevin Glass
 	 */
-	private class KeyInputHandler extends KeyAdapter {
+	public class KeyInputHandler extends KeyAdapter {
 		/** The number of key presses we've had while waiting for an "any key" press */
-		private int pressCount = 1;
+		public int pressCount = 1;
 		
 		/**
 		 * Notification from AWT that a key has been pressed. Note that
@@ -459,7 +481,8 @@ public class Game extends Canvas {
 	 * 
 	 * @param argv The arguments that are passed into our game
 	 */
-	public static void main(String argv[]) {
+	public static void main(int lvl) {
+		level = lvl;
 		Game g =new Game();
 
 		// Start the main game loop, note: this method will not

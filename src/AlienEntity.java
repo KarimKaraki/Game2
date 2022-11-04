@@ -41,23 +41,24 @@ public class AlienEntity extends Entity {
 		if(angle == 0) {
 			if(direction == false) { //if direction is false the target goes left
 			
-				x -= 1.5;
-				y -= 1.5;
+				x -= 2;
+				y -= 0;
 			} else {
-				x+= 1.5;
-				y-= 1.5;
+				x+= 2;
+				y-= 0;
 			}
 		} else if (angle == 1) {
 			if(direction == false) { //if direction is false the target goes left
 				
-				x -= 1;
-				y -= 1;
+				x -= 2;
+				y -= 2*Math.cos((x/55)+4) ;
+				//System.out.println(y);
 			} else {
-				x+= 1;
-				y-= 1;
+				x+= 2;
+				y-= 2*Math.cos((x/55)+4) ;
 			}
 			
-		} else {
+		} else if (angle == 2) {
 			if(direction == false) { //if direction is false the target goes left
 				
 				x -= 0;
@@ -66,6 +67,15 @@ public class AlienEntity extends Entity {
 				x+= 0;
 				y-= 2;
 			}
+		} else if(angle == 3) {
+			if(direction == false) {
+				x -= 2;
+				y -= (16/3);
+			} else {
+				x += 2;
+				y -= (16/3);
+			}
+			
 		}
 		
 		

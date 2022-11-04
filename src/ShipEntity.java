@@ -2,7 +2,6 @@
 /**
  * The entity that represents the players ship
  * 
- * @author Kevin Glass
  */
 public class ShipEntity extends Entity {
 	/** The game in which the ship exists */

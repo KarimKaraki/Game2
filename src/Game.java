@@ -32,7 +32,6 @@ import javax.swing.JLabel;
  * detect events (e.g. alient killed, played died) and will take
  * appropriate game actions.
  * 
- * @author Kevin Glass
  */
 public class Game extends Canvas {
 	/** The stragey that allows us to use accelerate page flipping */

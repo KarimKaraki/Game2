@@ -18,7 +18,6 @@ import javax.imageio.ImageIO;
  * <p>
  * [singleton]
  * <p>
- * @author Kevin Glass
  */
 public class SpriteStore {
 	/** The single instance of this class */

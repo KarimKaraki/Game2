@@ -2,7 +2,6 @@
 /**
  * An entity representing a shot fired by the player's ship
  * 
- * @author Kevin Glass
  */
 public class ShotEntity extends Entity {
 	/** The vertical speed at which the players shot moves */
